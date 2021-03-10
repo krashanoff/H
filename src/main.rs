@@ -2,7 +2,10 @@ use std::{env::args, iter::FromIterator, process::exit};
 
 // H
 // For the dead week enjoyer.
+//
+// WTFPL
 
+/// Encodes a single four-bit value to `baseH`.
 fn encode_u4(c: &u8) -> char {
     match c {
         0b0000 => 'H',   // Latin Capital Letter H
@@ -25,6 +28,7 @@ fn encode_u4(c: &u8) -> char {
     }
 }
 
+/// Decodes a given `char` from `baseH` to a four-bit value.
 fn decode_u4(c: &char) -> u8 {
     match c {
         'H' => 0b0000,
@@ -51,18 +55,20 @@ fn decode_u4(c: &char) -> u8 {
 pub fn encode(input: &String) -> String {
     let s = input.as_bytes();
     let mut encoded = String::new();
+
     for byte in s.iter() {
         encoded.push(encode_u4(&(byte >> 4)));
         encoded.push(encode_u4(&(byte & 0x0f)));
     }
+
     encoded
 }
 
 /// Decode a slice of bytes to H.
 pub fn decode(input: &String) -> String {
     let bytes: Vec<char> = input.char_indices().map(|(_, c)| c).collect();
-
     let mut decoded = String::new();
+
     for (idx, c) in bytes.iter().enumerate().step_by(2) {
         let mut b = decode_u4(c) << 4;
         if idx + 1 < bytes.len() {
@@ -70,19 +76,20 @@ pub fn decode(input: &String) -> String {
         }
         decoded.push(b.into());
     }
+
     decoded
 }
 
 /// Kill the program with some error message.
-fn die(code: i32, msg: &str) {
+fn die(msg: &str) {
     println!("{}", msg);
-    exit(code)
+    exit(1)
 }
 
 fn main() {
     let vargs: Vec<String> = args().collect();
     if vargs.len() < 3 {
-        die(1, "Usage: H [edED] .*")
+        die("Usage: H [edED] .*")
     }
 
     let bytes = vargs[2..].iter().fold(String::new(), |a, e| {
@@ -92,7 +99,7 @@ fn main() {
     match vargs[1].to_uppercase().as_str() {
         "E" => print!("{}", encode(&bytes)),
         "D" => print!("{}", decode(&bytes)),
-        &_ => die(1, "Invalid mode."),
+        &_ => die("Invalid mode."),
     }
     exit(0)
 }
