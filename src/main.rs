@@ -1,9 +1,13 @@
-use std::{env::args, iter::FromIterator, process::exit};
+#![allow(non_snake_case)]
+use std::{env::args, process::exit};
 
+//
 // H
+//
 // For the dead week enjoyer.
 //
 // WTFPL
+//
 
 /// Encodes a single four-bit value to `baseH`.
 fn encode_u4(c: &u8) -> char {
@@ -92,10 +96,7 @@ fn main() {
         die("Usage: H [edED] .*")
     }
 
-    let bytes = vargs[2..].iter().fold(String::new(), |a, e| {
-        String::from_iter(a.chars().chain(e.chars()))
-    });
-
+    let bytes = vargs[2..].join(" ");
     match vargs[1].to_uppercase().as_str() {
         "E" => print!("{}", encode(&bytes)),
         "D" => print!("{}", decode(&bytes)),
