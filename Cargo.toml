@@ -1,5 +1,13 @@
 [package]
-name = "H"
-version = "0.1.0"
-authors = ["Leo <leo@krashanoff.com>"]
+name = "h-encoder"
+version = "1.0.0"
+authors = ["Leo Krashanoff <leo@krashanoff.com>"]
 edition = "2018"
+description = "For the dead week 𝓮𝓷𝓳𝓸𝔂𝓮𝓻."
+documentation = "https://github.com/krashanoff/H"
+homepage = "https://github.com/krashanoff/H"
+repository = "https://github.com/krashanoff/H"
+readme = "README.md"
+license = "WTFPL"
+keywords = ["h", "encoding", "dead", "week"]
+categories = ["command-line-utilities", "encoding"]

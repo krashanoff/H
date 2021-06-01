@@ -5,10 +5,11 @@ For the dead week 𝓮𝓷𝓳𝓸𝔂𝓮𝓻. A sophisticated twist on [Fernsi
 ## Usage
 
 ```
-H [eEdD] (.*)
+H [eEdD] (-|.*)
 ```
 
-`e|E` **encodes** capture group one. `d|D` **decodes** capture group one.
+`e|E` **encodes** capture group one. `d|D` **decodes** capture group one. Specifying `-` reads from stdin
+as capture group one, and anything else reads the remaining arguments as capture group one.
 
 ## How
 

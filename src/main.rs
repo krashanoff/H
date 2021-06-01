@@ -1,5 +1,9 @@
 #![allow(non_snake_case)]
-use std::{env::args, process::exit};
+use std::{
+    env::args,
+    io::{stdin, Read},
+    process::exit,
+};
 
 //
 // H
@@ -33,73 +37,71 @@ fn encode_u4(c: &u8) -> char {
 }
 
 /// Decodes a given `char` from `baseH` to a four-bit value.
-fn decode_u4(c: &char) -> u8 {
+fn decode_u4(c: &char) -> Result<u8, &'static str> {
     match c {
-        'H' => 0b0000,
-        'h' => 0b0001,
-        'Ĥ' => 0b0010,
-        'ĥ' => 0b0011,
-        'Ħ' => 0b0100,
-        'ħ' => 0b0101,
-        'Ƕ' => 0b0110,
-        'Ȟ' => 0b0111,
-        'ȟ' => 0b1000,
-        'ℋ' => 0b1001,
-        'ℌ' => 0b1010,
-        'ℍ' => 0b1011,
-        'ℎ' => 0b1100,
-        'ℏ' => 0b1101,
-        'ḩ' => 0b1110,
-        'Ⱨ' => 0b1111,
-        _ => 0.into(),
+        'H' => Ok(0b0000),
+        'h' => Ok(0b0001),
+        'Ĥ' => Ok(0b0010),
+        'ĥ' => Ok(0b0011),
+        'Ħ' => Ok(0b0100),
+        'ħ' => Ok(0b0101),
+        'Ƕ' => Ok(0b0110),
+        'Ȟ' => Ok(0b0111),
+        'ȟ' => Ok(0b1000),
+        'ℋ' => Ok(0b1001),
+        'ℌ' => Ok(0b1010),
+        'ℍ' => Ok(0b1011),
+        'ℎ' => Ok(0b1100),
+        'ℏ' => Ok(0b1101),
+        'ḩ' => Ok(0b1110),
+        'Ⱨ' => Ok(0b1111),
+        _ => Err("input is not H-encoded"),
     }
-}
-
-/// Encode a slice of bytes to H.
-pub fn encode(input: &String) -> String {
-    let s = input.as_bytes();
-    let mut encoded = String::new();
-
-    for byte in s.iter() {
-        encoded.push(encode_u4(&(byte >> 4)));
-        encoded.push(encode_u4(&(byte & 0x0f)));
-    }
-
-    encoded
-}
-
-/// Decode a slice of bytes to H.
-pub fn decode(input: &String) -> String {
-    let bytes: Vec<char> = input.char_indices().map(|(_, c)| c).collect();
-    let mut decoded = String::new();
-
-    for (idx, c) in bytes.iter().enumerate().step_by(2) {
-        let mut b = decode_u4(c) << 4;
-        if idx + 1 < bytes.len() {
-            b |= decode_u4(&bytes[idx + 1]);
-        }
-        decoded.push(b.into());
-    }
-
-    decoded
 }
 
 /// Kill the program with some error message.
-fn die(msg: &str) {
-    println!("{}", msg);
+fn die<T: ToString>(msg: T) -> ! {
+    eprintln!("{}", msg.to_string());
     exit(1)
 }
 
 fn main() {
     let vargs: Vec<String> = args().collect();
     if vargs.len() < 3 {
-        die("Usage: H [edED] .*")
+        die("Usage: H [edED] (-|.*)")
     }
 
-    let bytes = vargs[2..].join(" ");
+    let buf = match vargs[2].as_str() {
+        "-" => {
+            let mut buffer = String::new();
+            stdin()
+                .read_to_string(&mut buffer)
+                .unwrap_or_else(|e| die(format!("Failed to read from stdin: {}", e)));
+            buffer
+        }
+        _ => vargs[2..].join(" "),
+    };
+
     match vargs[1].to_uppercase().as_str() {
-        "E" => print!("{}", encode(&bytes)),
-        "D" => print!("{}", decode(&bytes)),
+        "E" => {
+            buf.bytes().for_each(|b| {
+                print!("{}", encode_u4(&(b >> 4)));
+                print!("{}", encode_u4(&(b & 0x0f)));
+            });
+        }
+        "D" => {
+            buf.chars()
+                .collect::<Vec<char>>()
+                .chunks(2)
+                .for_each(|chunk| match chunk {
+                    &[c1, c2] => {
+                        let mut b = decode_u4(&c1).unwrap_or_else(|e| die(e)) << 4;
+                        b |= decode_u4(&c2).unwrap_or_else(|e| die(e));
+                        print!("{}", b as char);
+                    }
+                    &_ => die("Input is not valid H encoding."),
+                });
+        }
         &_ => die("Invalid mode."),
     }
     exit(0)
